@@ -1,0 +1,449 @@
+// Dashboard HTML for full-page view
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoMonitor Dashboard</title>
+    <style>
+        /* Matrix Theme */
+        :root {
+            --matrix-bg: #000000;
+            --matrix-text: #00ff00;
+            --matrix-accent: #00cc00;
+            --matrix-dim: #005500;
+            --box-bg: rgba(0, 20, 0, 0.7);
+            --box-border: #00ff00;
+        }
+        
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        body {
+            background-color: var(--matrix-bg);
+            color: var(--matrix-text);
+            font-family: 'Courier New', monospace;
+            position: relative;
+            padding: 20px;
+        }
+        
+        /* Matrix Rain Animation Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15; /* Subtle, not distracting */
+        }
+        
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--matrix-accent);
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--matrix-text);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            color: var(--matrix-text);
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px var(--matrix-text);
+            box-shadow: 0 0 5px var(--matrix-text);
+        }
+        
+        /* Asset Selector */
+        .asset-selector {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .asset-selector select {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            color: var(--matrix-text);
+            padding: 8px;
+            margin-left: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+        
+        /* Main Content Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        /* Points Boxes */
+        .points-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            padding: 15px;
+            box-shadow: 0 0 10px var(--matrix-text);
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+        
+        .points-box h2 {
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--matrix-dim);
+            padding-bottom: 10px;
+        }
+        
+        .points-value {
+            font-size: 36px;
+            text-align: center;
+            margin: 15px 0;
+            text-shadow: 0 0 5px var(--matrix-text);
+        }
+        
+        .points-reasons {
+            margin-top: 10px;
+            font-size: 14px;
+            border-top: 1px solid var(--matrix-dim);
+            padding-top: 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .points-reason {
+            margin-bottom: 8px;
+        }
+        
+        /* Candlestick Points Box */
+        .candlestick-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            padding: 15px;
+            box-shadow: 0 0 10px var(--matrix-text);
+            grid-column: span 2;
+        }
+        
+        .candlestick-box h2 {
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--matrix-dim);
+            padding-bottom: 10px;
+        }
+        
+        .candlestick-points {
+            font-size: 24px;
+            text-align: center;
+            margin: 15px 0;
+            text-shadow: 0 0 5px var(--matrix-text);
+        }
+        
+        .candlestick-details {
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        /* Alerts Box */
+        .alerts-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            padding: 15px;
+            box-shadow: 0 0 10px var(--matrix-text);
+            grid-column: span 2;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .alerts-box h2 {
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--matrix-dim);
+            padding-bottom: 10px;
+            flex-shrink: 0;
+        }
+        
+        .alerts-list {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .alert-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--matrix-dim);
+            font-size: 14px;
+        }
+        
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* RSI Values Box */
+        .rsi-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            padding: 15px;
+            box-shadow: 0 0 10px var(--matrix-text);
+            grid-column: span 2;
+        }
+        
+        .rsi-box h2 {
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--matrix-dim);
+            padding-bottom: 10px;
+        }
+        
+        .rsi-values {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .rsi-value {
+            width: 16%;
+            text-align: center;
+            padding: 10px 0;
+        }
+        
+        .rsi-value span {
+            display: block;
+        }
+        
+        .rsi-timeframe {
+            font-size: 14px;
+            color: var(--matrix-dim);
+        }
+        
+        .rsi-number {
+            font-size: 24px;
+            text-shadow: 0 0 5px var(--matrix-text);
+        }
+        
+        /* Overbought/Oversold Colors */
+        .overbought {
+            color: #ff0000;
+        }
+        
+        .oversold {
+            color: #00ff00;
+        }
+
+        /* Loading Indicator */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            flex-direction: column;
+        }
+
+        .loading-text {
+            color: var(--matrix-text);
+            margin-top: 20px;
+            text-shadow: 0 0 5px var(--matrix-text);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 255, 0, 0.1);
+            border-left-color: var(--matrix-text);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error Message */
+        .error-message {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        .connected {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: var(--matrix-text);
+        }
+
+        .disconnected {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+
+        /* Last Update Time */
+        .last-update {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: var(--matrix-dim);
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Background -->
+    <canvas class="matrix-bg" id="matrix-canvas"></canvas>
+    
+    <!-- Loading Indicator -->
+    <div class="loading" id="loading-indicator">
+        <div class="spinner"></div>
+        <div class="loading-text">Connecting to CryptoMonitor...</div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" id="error-message"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">CryptoMonitor Dashboard</div>
+            <div class="nav-buttons">
+                <button class="nav-btn" id="config-btn">Configuration</button>
+                <button class="nav-btn" id="refresh-btn">Refresh Data</button>
+            </div>
+        </div>
+        
+        <!-- Asset Selector -->
+        <div class="asset-selector">
+            <label>Asset:</label>
+            <select id="asset-select">
+                <option value="BTC">BTC</option>
+                <option value="ETH">ETH</option>
+                <option value="SOL">SOL</option>
+                <option value="BNB">BNB</option>
+                <option value="AVAX">AVAX</option>
+            </select>
+        </div>
+        
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Short Points Box -->
+            <div class="points-box">
+                <h2>Short Points</h2>
+                <div class="points-value" id="short-points-value">0</div>
+                <div class="points-reasons" id="short-points-reasons">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Long Points Box -->
+            <div class="points-box">
+                <h2>Long Points</h2>
+                <div class="points-value" id="long-points-value">0</div>
+                <div class="points-reasons" id="long-points-reasons">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Candlestick Points Box -->
+            <div class="candlestick-box">
+                <h2>Candlestick Points</h2>
+                <div class="candlestick-points" id="candlestick-points-value">0 points</div>
+                <div class="candlestick-details" id="candlestick-details">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Alerts Box -->
+            <div class="alerts-box">
+                <h2>Alerts</h2>
+                <div class="alerts-list" id="alerts-list">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- RSI Values Box -->
+            <div class="rsi-box">
+                <h2>RSI Values</h2>
+                <div class="rsi-values">
+                    <div class="rsi-value">
+                        <span class="rsi-timeframe">1m</span>
+                        <span class="rsi-number" id="rsi-1m">--</span>
+                    </div>
+                    <div class="rsi-value">
+                        <span class="rsi-timeframe">5m</span>
+                        <span class="rsi-number" id="rsi-5m">--</span>
+                    </div>
+                    <div class="rsi-value">
+                        <span class="rsi-timeframe">15m</span>
+                        <span class="rsi-number" id="rsi-15m">--</span>
+                    </div>
+                    <div class="rsi-value">
+                        <span class="rsi-timeframe">30m</span>
+                        <span class="rsi-number" id="rsi-30m">--</span>
+                    </div>
+                    <div class="rsi-value">
+                        <span class="rsi-timeframe">1h</span>
+                        <span class="rsi-number" id="rsi-1h">--</span>
+                    </div>
+                    <div class="rsi-value">
+                        <span class="rsi-timeframe">1d</span>
+                        <span class="rsi-number" id="rsi-1d">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Connection Status -->
+        <div class="connection-status" id="connection-status">Connecting...</div>
+        
+        <!-- Last Update Time -->
+        <div class="last-update" id="last-update"></div>
+    </div>
+    
+    <script src="dashboard.js"></script>
+</body>
+</html>

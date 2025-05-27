@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlertCrypto Matrix 2025</title>
+    <style>
+        /* Matrix Theme */
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 800px;
+            height: 600px;
+            position: relative;
+            overflow: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .container.fullscreen-mode {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #matrix-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #00ff00;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .nav-buttons {
+            display: flex;
+        }
+        
+        .nav-button {
+            background-color: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-button:hover {
+            background-color: #00ff00;
+            color: #000;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-connecting {
+            background-color: #ffff00;
+            box-shadow: 0 0 5px #ffff00;
+        }
+        
+        .status-connected {
+            background-color: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        
+        .status-disconnected {
+            background-color: #ff0000;
+            box-shadow: 0 0 5px #ff0000;
+        }
+        
+        .page {
+            display: none;
+            padding: 10px;
+            height: calc(100% - 60px);
+            overflow: auto;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* Dashboard Page */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-price {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .dashboard-price-change {
+            font-size: 18px;
+        }
+        
+        .positive {
+            color: #00ff00;
+        }
+        
+        .negative {
+            color: #ff0000;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 10px;
+            border: 1px solid #00ff00;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .dashboard-box {
+            border: 1px solid #00ff00;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-box-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+        }
+        
+        .rsi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+        
+        .rsi-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .rsi-label {
+            font-size: 12px;
+        }
+        
+        .rsi-number {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .overbought {
+            color: #ff0000;
+        }
+        
+        .oversold {
+            color: #00ff00;
+        }
+        
+        .points-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            height: 50px;
+        }
+        
+        .short-points {
+            color: #ff0000;
+        }
+        
+        .long-points {
+            color: #00ff00;
+        }
+        
+        .alerts-box {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .alert-item {
+            margin-bottom: 5px;
+            border-bottom: 1px dotted #00ff00;
+            padding-bottom: 5px;
+        }
+        
+        /* Config Page */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .config-box {
+            border: 1px solid #00ff00;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .config-box-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+        }
+        
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .config-label {
+            flex: 1;
+        }
+        
+        .config-input {
+            width: 60px;
+            background-color: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 2px 5px;
+        }
+        
+        .config-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .config-button {
+            background-color: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 15px;
+            margin: 0 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .config-button:hover {
+            background-color: #00ff00;
+            color: #000;
+        }
+        
+        /* RSI Config Tabs */
+        .rsi-tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .rsi-tab {
+            padding: 5px 10px;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        
+        .rsi-tab.active {
+            background-color: #00ff00;
+            color: #000;
+        }
+        
+        .rsi-tab-content {
+            display: none;
+        }
+        
+        .rsi-tab-content.active {
+            display: block;
+        }
+        
+        /* Status Message */
+        #config-status {
+            background-color: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+        
+        /* TradingView iframe */
+        #tradingview-container {
+            width: 100%;
+            height: 300px;
+            border: none;
+        }
+    </style>
+    <!-- Local Chart.js libraries -->
+    <script src="lib/chart.min.js"></script>
+    <script src="lib/chartjs-adapter-date-fns.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <canvas id="matrix-canvas"></canvas>
+        
+        <div class="header">
+            <div class="logo">AlertCrypto Matrix 2025</div>
+            <div class="nav-buttons">
+                <button id="dashboard-btn" class="nav-button">Dashboard</button>
+                <button id="config-btn" class="nav-button">Config</button>
+                <button id="fullscreen-btn" class="nav-button">Full Screen</button>
+            </div>
+            <div class="status">
+                <div id="status-dot" class="status-dot status-connecting"></div>
+                <div id="status-text">Connecting...</div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+            <div class="dashboard-header">
+                <div>
+                    <select id="dashboard-asset-select">
+                        <option value="BTC">Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="SOL">Solana (SOL)</option>
+                        <option value="BNB">Binance Coin (BNB)</option>
+                        <option value="AVAX">Avalanche (AVAX)</option>
+                    </select>
+                </div>
+                <div>
+                    <span id="dashboard-price" class="dashboard-price">$0.00</span>
+                    <span id="dashboard-price-change" class="dashboard-price-change">(0.00%)</span>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <!-- Chart will be rendered here using Chart.js -->
+                <canvas id="price-chart"></canvas>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="dashboard-box">
+                    <div class="dashboard-box-title">RSI Values</div>
+                    <div class="rsi-grid">
+                        <div class="rsi-item">
+                            <div class="rsi-label">1m</div>
+                            <div id="dashboard-rsi-1m" class="rsi-number">-</div>
+                        </div>
+                        <div class="rsi-item">
+                            <div class="rsi-label">5m</div>
+                            <div id="dashboard-rsi-5m" class="rsi-number">-</div>
+                        </div>
+                        <div class="rsi-item">
+                            <div class="rsi-label">15m</div>
+                            <div id="dashboard-rsi-15m" class="rsi-number">-</div>
+                        </div>
+                        <div class="rsi-item">
+                            <div class="rsi-label">30m</div>
+                            <div id="dashboard-rsi-30m" class="rsi-number">-</div>
+                        </div>
+                        <div class="rsi-item">
+                            <div class="rsi-label">1h</div>
+                            <div id="dashboard-rsi-1h" class="rsi-number">-</div>
+                        </div>
+                        <div class="rsi-item">
+                            <div class="rsi-label">1d</div>
+                            <div id="dashboard-rsi-1d" class="rsi-number">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-box">
+                    <div class="dashboard-box-title">Moving Average (20-day)</div>
+                    <div id="dashboard-ma">$0.00</div>
+                    <div id="dashboard-ma-deviation">0.00%</div>
+                </div>
+                
+                <div class="dashboard-box">
+                    <div class="dashboard-box-title">Short Points</div>
+                    <div id="dashboard-short-points" class="points-box short-points">0</div>
+                    <div id="short-points-reasons"></div>
+                </div>
+                
+                <div class="dashboard-box">
+                    <div class="dashboard-box-title">Long Points</div>
+                    <div id="dashboard-long-points" class="points-box long-points">0</div>
+                    <div id="long-points-reasons"></div>
+                </div>
+                
+                <div class="dashboard-box">
+                    <div class="dashboard-box-title">Candlestick Patterns</div>
+                    <div id="dashboard-candlestick-points">0 points</div>
+                    <div id="dashboard-candlestick-details">No candlestick patterns detected</div>
+                </div>
+                
+                <div class="dashboard-box">
+                    <div class="dashboard-box-title">Wick Patterns</div>
+                    <div id="dashboard-wick-points">0 points</div>
+                    <div id="dashboard-wick-details">No wick patterns detected</div>
+                </div>
+                
+                <div class="dashboard-box">
+                    <div class="dashboard-box-title">Alerts</div>
+                    <div id="dashboard-alerts" class="alerts-box">No alerts</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Config Page -->
+        <div id="config-page" class="page">
+            <div id="config-status"></div>
+            
+            <div class="config-box">
+                <div class="config-box-title">RSI Configuration</div>
+                
+                <div class="rsi-tabs">
+                    <div class="rsi-tab active" data-timeframe="1m">1m</div>
+                    <div class="rsi-tab" data-timeframe="5m">5m</div>
+                    <div class="rsi-tab" data-timeframe="15m">15m</div>
+                    <div class="rsi-tab" data-timeframe="30m">30m</div>
+                    <div class="rsi-tab" data-timeframe="1h">1h</div>
+                    <div class="rsi-tab" data-timeframe="1d">1d</div>
+                </div>
+                
+                <!-- 1m RSI Config -->
+                <div id="rsi-1m-config" class="rsi-tab-content active">
+                    <div class="config-grid">
+                        <div>
+                            <div class="config-box-title">Short (RSI Above)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-1m-short-threshold1" type="number" class="config-input" value="50">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-1m-short-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-1m-short-threshold2" type="number" class="config-input" value="60">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-1m-short-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-1m-short-threshold3" type="number" class="config-input" value="70">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-1m-short-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-1m-short-threshold4" type="number" class="config-input" value="80">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-1m-short-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="config-box-title">Long (RSI Below)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-1m-long-threshold1" type="number" class="config-input" value="40">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-1m-long-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-1m-long-threshold2" type="number" class="config-input" value="30">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-1m-long-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-1m-long-threshold3" type="number" class="config-input" value="20">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-1m-long-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-1m-long-threshold4" type="number" class="config-input" value="10">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-1m-long-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 5m RSI Config -->
+                <div id="rsi-5m-config" class="rsi-tab-content">
+                    <div class="config-grid">
+                        <div>
+                            <div class="config-box-title">Short (RSI Above)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-5m-short-threshold1" type="number" class="config-input" value="50">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-5m-short-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-5m-short-threshold2" type="number" class="config-input" value="60">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-5m-short-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-5m-short-threshold3" type="number" class="config-input" value="70">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-5m-short-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-5m-short-threshold4" type="number" class="config-input" value="80">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-5m-short-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="config-box-title">Long (RSI Below)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-5m-long-threshold1" type="number" class="config-input" value="40">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-5m-long-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-5m-long-threshold2" type="number" class="config-input" value="30">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-5m-long-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-5m-long-threshold3" type="number" class="config-input" value="20">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-5m-long-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-5m-long-threshold4" type="number" class="config-input" value="10">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-5m-long-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 15m RSI Config -->
+                <div id="rsi-15m-config" class="rsi-tab-content">
+                    <div class="config-grid">
+                        <div>
+                            <div class="config-box-title">Short (RSI Above)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-15m-short-threshold1" type="number" class="config-input" value="50">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-15m-short-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-15m-short-threshold2" type="number" class="config-input" value="60">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-15m-short-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-15m-short-threshold3" type="number" class="config-input" value="70">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-15m-short-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-15m-short-threshold4" type="number" class="config-input" value="80">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-15m-short-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="config-box-title">Long (RSI Below)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-15m-long-threshold1" type="number" class="config-input" value="40">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-15m-long-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-15m-long-threshold2" type="number" class="config-input" value="30">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-15m-long-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-15m-long-threshold3" type="number" class="config-input" value="20">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-15m-long-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-15m-long-threshold4" type="number" class="config-input" value="10">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-15m-long-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 30m RSI Config -->
+                <div id="rsi-30m-config" class="rsi-tab-content">
+                    <div class="config-grid">
+                        <div>
+                            <div class="config-box-title">Short (RSI Above)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-30m-short-threshold1" type="number" class="config-input" value="50">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-30m-short-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-30m-short-threshold2" type="number" class="config-input" value="60">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-30m-short-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-30m-short-threshold3" type="number" class="config-input" value="70">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-30m-short-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-30m-short-threshold4" type="number" class="config-input" value="80">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-30m-short-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="config-box-title">Long (RSI Below)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-30m-long-threshold1" type="number" class="config-input" value="40">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-30m-long-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-30m-long-threshold2" type="number" class="config-input" value="30">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-30m-long-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-30m-long-threshold3" type="number" class="config-input" value="20">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-30m-long-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-30m-long-threshold4" type="number" class="config-input" value="10">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-30m-long-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 1h RSI Config -->
+                <div id="rsi-1h-config" class="rsi-tab-content">
+                    <div class="config-grid">
+                        <div>
+                            <div class="config-box-title">Short (RSI Above)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-1h-short-threshold1" type="number" class="config-input" value="50">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-1h-short-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-1h-short-threshold2" type="number" class="config-input" value="60">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-1h-short-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-1h-short-threshold3" type="number" class="config-input" value="70">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-1h-short-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-1h-short-threshold4" type="number" class="config-input" value="80">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-1h-short-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="config-box-title">Long (RSI Below)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-1h-long-threshold1" type="number" class="config-input" value="40">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-1h-long-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-1h-long-threshold2" type="number" class="config-input" value="30">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-1h-long-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-1h-long-threshold3" type="number" class="config-input" value="20">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-1h-long-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-1h-long-threshold4" type="number" class="config-input" value="10">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-1h-long-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 1d RSI Config -->
+                <div id="rsi-1d-config" class="rsi-tab-content">
+                    <div class="config-grid">
+                        <div>
+                            <div class="config-box-title">Short (RSI Above)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-1d-short-threshold1" type="number" class="config-input" value="50">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-1d-short-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-1d-short-threshold2" type="number" class="config-input" value="60">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-1d-short-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-1d-short-threshold3" type="number" class="config-input" value="70">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-1d-short-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-1d-short-threshold4" type="number" class="config-input" value="80">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-1d-short-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="config-box-title">Long (RSI Below)</div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 1:</div>
+                                <input id="rsi-1d-long-threshold1" type="number" class="config-input" value="40">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 1:</div>
+                                <input id="rsi-1d-long-points1" type="number" class="config-input" value="1">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 2:</div>
+                                <input id="rsi-1d-long-threshold2" type="number" class="config-input" value="30">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 2:</div>
+                                <input id="rsi-1d-long-points2" type="number" class="config-input" value="2">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 3:</div>
+                                <input id="rsi-1d-long-threshold3" type="number" class="config-input" value="20">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 3:</div>
+                                <input id="rsi-1d-long-points3" type="number" class="config-input" value="3">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Threshold 4:</div>
+                                <input id="rsi-1d-long-threshold4" type="number" class="config-input" value="10">
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Points 4:</div>
+                                <input id="rsi-1d-long-points4" type="number" class="config-input" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-box">
+                <div class="config-box-title">Moving Average Configuration</div>
+                <div class="config-item">
+                    <div class="config-label">Period:</div>
+                    <input id="ma-period" type="number" class="config-input" value="20">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Base Points:</div>
+                    <input id="ma-base-points" type="number" class="config-input" value="5">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Deviation Threshold (%):</div>
+                    <input id="ma-deviation-threshold" type="number" class="config-input" value="50">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Deviation Points:</div>
+                    <input id="ma-deviation-points" type="number" class="config-input" value="5">
+                </div>
+            </div>
+            
+            <div class="config-box">
+                <div class="config-box-title">Bollinger Bands Configuration</div>
+                <div class="config-item">
+                    <div class="config-label">Period:</div>
+                    <input id="bb-period" type="number" class="config-input" value="20">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Standard Deviation:</div>
+                    <input id="bb-std-dev" type="number" step="0.1" class="config-input" value="2">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Touch Points:</div>
+                    <input id="bb-touch-points" type="number" class="config-input" value="3">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Break Points:</div>
+                    <input id="bb-break-points" type="number" class="config-input" value="5">
+                </div>
+            </div>
+            
+            <div class="config-box">
+                <div class="config-box-title">Candlestick Pattern Configuration</div>
+                <div class="config-item">
+                    <div class="config-label">Min Consecutive Candles:</div>
+                    <input id="candle-min-consecutive" type="number" class="config-input" value="4">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Base Points:</div>
+                    <input id="candle-base-points" type="number" class="config-input" value="5">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Additional Points:</div>
+                    <input id="candle-additional-points" type="number" class="config-input" value="5">
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Alert Threshold:</div>
+                    <input id="candle-alert-threshold" type="number" class="config-input" value="6">
+                </div>
+            </div>
+            
+            <div class="config-buttons">
+                <button id="save-config-btn" class="config-button">Save Configuration</button>
+                <button id="reset-config-btn" class="config-button">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>
